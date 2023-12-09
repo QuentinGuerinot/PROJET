@@ -40,6 +40,12 @@ def run_opti(cell,sim):
     Tbmin = cell.Tbmin
     Cb = cell.Cp
     h = cell.h
+
+    class Vehicule:
+        SOCi=0
+        SOCf=100
+        aj=0
+        dj=0
     
     S  = 2*np.pi*L*R
         
