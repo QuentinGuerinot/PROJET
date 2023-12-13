@@ -1,3 +1,10 @@
+# Auteur : Bastien VENOT
+# Date   : 06/09/2022
+# Projet : CROpti
+
+# Script de l'interface graphique permettant une utilisation plus intuitive du
+# simulateur de charge de batterie
+
 from tkinter import *
 import runpy
 import numpy as np
@@ -7,7 +14,7 @@ from   matplotlib.figure import Figure
 from   matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 import CROptiCellConfig as config
-import CROptiBO_v6 as openloop
+import Projet as openloop
 
 
 ## Functions
@@ -67,6 +74,12 @@ def layout_adv_param(active_const):
     frame_var.grid(row=2,column=0, columnspan=2)
 
 
+def init_advanced_param(win_param,active_const):
+    # Fonction d'initialisation de la fenêtre de paramètres avancés
+    global frame_const, frame_var
+    frame_const = Frame(win_param)
+    frame_var = Frame(win_param)
+    layout_adv_param(active_const)
 
 def modify_win_param(active_const):
     # Lance la modification de la dispotion des éléments de al fenêtre de paramètres avancés
@@ -74,6 +87,53 @@ def modify_win_param(active_const):
     frame_const.grid_forget()
     frame_var.grid_forget()
     layout_adv_param(active_const)
+
+def open_advanced_param():
+    # Ouverture de la fenêtre de paramètres avancés et disposition des éléments fixes
+    win_param = Toplevel(app)
+    win_param.resizable(False,False)
+    win_param.title('Advanced Setting')
+    win_param.grab_set()
+
+    active_const = BooleanVar(None,True)
+
+    rb_const = Radiobutton(win_param,
+                           text="Constant",
+                           variable=active_const,
+                           value=True,
+                           command = lambda:modify_win_param(True),
+                           indicatoron=False,
+                           width=30)
+
+    rb_var = Radiobutton(win_param,
+                         text="Variable",
+                         variable=active_const,
+                         value=False,
+                         command = lambda:modify_win_param(False),
+                         indicatoron=False,
+                         width=30)
+
+    rb_const.grid(row=0,column=0,sticky='E')
+    rb_var.grid(row=0,column=1,sticky='W')
+
+    init_advanced_param(win_param,True)
+
+    frame_equations = Frame(win_param)
+    frame_equations.grid(row=3,column=0,columnspan=2,pady=10)
+
+    R0_equation = "R0(soc) = b1*soc^4 + b2*soc^3 + b3*soc^2 +b4*soc + b5"
+    Rs_equation = "Rs(soc) = k1*exp(-k2*soc) + k3"
+    Cs_equation = "Cs(soc) = d1*soc^4 + d2*soc^3 + d3*soc^2 + d4*soc + d5"
+    Rl_equation = "Rl(soc) = g1*exp(-g2*soc) + g3 + g4*soc"
+    Cl_equation = "Cl(soc) = h1*soc^5 + h2*soc^4 + h3*soc^3 + h4*soc^2 + h5*soc + h6"
+
+    Label(frame_equations,text=R0_equation).pack(anchor=W)
+    Label(frame_equations,text=Rs_equation).pack(anchor=W)
+    Label(frame_equations,text=Cs_equation).pack(anchor=W)
+    Label(frame_equations,text=Rl_equation).pack(anchor=W)
+    Label(frame_equations,text=Cl_equation).pack(anchor=W)
+
+    win_param.mainloop()
 
 def init_setting():
     # Initialisation des valeurs affichées dans les entrées de l'IHM
@@ -161,15 +221,15 @@ def plot_optres(selgraph):
 
 
     if selgraph == 0:
-        fig.add_subplot(111).plot(optres.t/60, optres.soc*100,'black')
+        fig.add_subplot(111).plot(optres.t, optres.P,'black')
         plt.xlabel('Time [min]')
-        plt.ylabel('SOC [%]')
-        plt.title('Sate of Charge (SOC) vs time')
+        plt.ylabel('puissance')
+        plt.title('puissance')
     elif selgraph == 1:
-        fig.add_subplot(111).plot(optres.t[0:sim.Nsamp]/60, abs(optres.ib),'red')
+        fig.add_subplot(111).plot(optres.t, optres.X,'red')
         plt.xlabel('Time [min]')
-        plt.ylabel('Ib [A]')
-        plt.title('Charge current (Ib) vs time')
+        plt.ylabel('soc')
+        plt.title('soc')
     elif selgraph == 2:
         fig.add_subplot(111).plot(optres.t[0:sim.Nsamp]/60, optres.vb,'blue')
         plt.xlabel('Time [min]')
@@ -193,7 +253,7 @@ def run_sim():
     # Lance le programme de calcul d'optimisation
     global optres,cell,sim
     cell,sim = get_entries()
-    optres   = openloop.run_opti(cell,sim)
+    optres   = openloop.run_opti()
     plot_optres(0)
 
 
@@ -205,7 +265,7 @@ app = Tk()
 app.resizable(False,False)
 app.title("CROpti Demonstrator - © EXPLEO Group")
 
-optres = openloop.Results(0,0,0,0,0,0)
+optres = openloop.Results(0,0,0)
 
 ## Création et disposition des sections de la fenêtre
 
@@ -291,7 +351,6 @@ Label(frame2, text="Convective Heat Transfert Coeff. [W/(m².K)]")\
 in_Tbmin = Entry(frame2)
 in_Tbmax = Entry(frame2)
 in_Cp = Entry(frame2)
-
 in_h  = Entry(frame2)
 
 in_Tbmin.grid(row=0,column=1,pady=pady_entry)
@@ -305,6 +364,9 @@ in_h.grid(row=3,column=1,pady=pady_entry)
 
 Button(frame3_L,text='RUN',command=run_sim)\
  .grid(row=0,column=0,pady=10,sticky='WE')
+
+Button(frame3_L,text='Advanced Param.',command=open_advanced_param)\
+ .grid(row=1,column=0,pady=10,sticky='WE')
 
 Button(frame3_L,text='Default Setting',command=restore_default_setting)\
  .grid(row=2,column=0,pady=10,sticky='WE')
@@ -340,14 +402,14 @@ in_Nsamp.grid(row=3,column=1,pady=pady_entry)
 rb_graph = IntVar(None,0)
 
 rb_soc = Radiobutton(frame_selgraph,
-                     text='SOC',
+                     text='puissance',
                      variable=rb_graph,
                      value=0,
                      indicatoron=False,
                      command=lambda:plot_optres(0))
 
 rb_I   = Radiobutton(frame_selgraph,
-                     text='Current',
+                     text='soc',
                      variable=rb_graph,
                      value=1,
                      indicatoron=False,
@@ -388,7 +450,5 @@ Label(frame_output, text="Test = 0").grid(row=0)
 init_setting()
 
 app.mainloop()
-
-
 
 
