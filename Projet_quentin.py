@@ -20,13 +20,21 @@ def run_opti():
     soc_final=100 #% capa finale
     ta=0 # temps d'arrivé h
     td=15# temps final h
+    Pmax=140 #puissance max borne
+
+    #plus tard (classe à mettre dans le run_opti())
+    #Xmax=50 = Config.Xmax
+    #soc_init = Config.soc_init
+    #soc_final = Config.soc_final
+    #ta = Config.ta
+    #td=15 = Config.td
+    #Pmax=15 = Config.Pmax
 
     kwh_init=Xmax*soc_init/100 
     kwh_final=Xmax*soc_final/100
 
     ##paramètres (tiré d'un autre fichier, directement ici dans un premier temps):
     Ck=np.array([100,1,1,1,1,100,1,1,1,1,1,1,1,100,1,1,1,1,1000,1,1,1,1,1]) #vecteur de prix selon l'heure
-    Pmax=140 #puissance max borne
     Dt=(td-ta) #différence de temps (utile pour le pas d'opti)
 
     t = np.linspace(ta,td,Dt+1) #vecteur temps pour le plot
