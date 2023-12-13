@@ -12,11 +12,8 @@ class Results():
         self.P = P
         self.X = X
         self.t = t
-        #self.ta = ta
-        #self.td = td
-        #self.capa = Xmax
 
-def projet():
+def run_opti():
     #temporaire (plus tard sera recupéré)
     Xmax=50 #Capa batterrie
     soc_init=0 #% capa init
@@ -80,7 +77,7 @@ def projet():
     
     return res
     
-V=projet() 
+V=run_opti() 
 
 print(V.P)
 print(V.X)
